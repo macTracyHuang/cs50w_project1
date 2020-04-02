@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block content %}
+    <!-- {{te}} -->
+    <h3>Log In</h3>
+    <!-- Login Form -->
+    <form>
+  <div class="form-row justify-content-center align-items-center mx-auto">
+    <div class="col-auto">
+      <label class="sr-only" for="inlineFormInput">Username</label>
+      <input type="text" class="form-control" name="username" placeholder="Username">
+    </div>
+    <div class="col-auto">
+      <label class="sr-only" for="inlineFormInputGroup">Password</label>
+      <div class="input-group">
+        <input type="password" class="form-control" name="password" placeholder="Password">
+      </div>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
