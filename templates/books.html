@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Books
+{% endblock %}
+
+
+{% block content %}
+  {% if book %}
+    <h1>Book details</h1>
+    <p>
+      Isbn:{{ book.isbn }}
+      <br>
+      Title:{{ book.title }}
+      <br>
+      Author:{{ book.author }}
+      <br>
+      Published Year:{{ book.year }}
+    </p>
+  {% else %}
+    <h1>Matched Books</h1>
+    <ul class="list-group d-inline-block">
+      {% for book in books %}
+      <li class="list-group-item justify-content-between align-items-center">
+        <a href="{{ url_for('book', book_id=book.id) }}">
+          {{ book.isbn }} : {{ book.title }} writtend by {{ book.author }} in {{ book.year }}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

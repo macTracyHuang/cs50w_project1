@@ -22,6 +22,14 @@ Session(app)
 def get_app():
     return app
 
+def search_book(val):
+    #check val
+    if val == "":
+        return None
+    else:
+        books = db.session.query(Book).filter(or_(Book.author.like("%"+val+"%"),Book.isbn.like("%"+val+"%"),Book.title.like("%"+val+"%"))).all()
+    return books
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -30,12 +38,39 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@app.route("/books")
+def books():
+    pass
+
+@app.route("/books/<int:book_id>")
+def book(book_id):
+    """List details about a single book."""
+
+    # Make sure book exists.
+    book = Book.query.get(book_id)
+    if book is None:
+        return render_template("index.html", status="No such book.")
+    # Get all reviews.
+    reviews = Review.query.filter_by(book_id=book_id).all()
+    return render_template("books.html", book=book, reviews=reviews)
+
 @app.route("/", methods=["GET", "POST"])
-# @login_required
+@login_required
 def index():
-    if request.method == "POST":
-        pass
-    return render_template("index.html",)
+    if request.method == "GET":
+        return render_template("index.html")
+    elif request.method == "POST":
+        #Get form information
+        book_val=request.form.get("book_val")
+        #search
+        books=search_book(book_val.strip())
+        if books == []:
+            return render_template("index.html",status="No such book")
+        elif books is None:
+            return render_template("index.html",status="Empty input")
+        else:
+            return render_template("books.html",books=books)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

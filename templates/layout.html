@@ -7,7 +7,7 @@
   <title>{% block title %}{% endblock %}</title>
   <style>
   main > .container{
-    margin-top: 40vh;
+    margin-top: 20vh;
   }
   </style>
   <!-- Bootstrap core CSS -->
@@ -31,7 +31,7 @@
             <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Book</a>
+            <a class="nav-link" href="/">Search</a>
           </li>
         </ul>
         <ul class="navbar-nav ml-auto">
@@ -40,14 +40,14 @@
             <a class="nav-link" href="#">{{ session.user_name }}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/logout">Log Out</a>
+            <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
           </li>
           {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="/signin">Sign In</a>
+            <a class="nav-link" href="{{ url_for('signin') }}">Sign In</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/login">Log In</a>
+            <a class="nav-link" href="{{ url_for('login') }}">Log In</a>
           </li>
           {% endif %}
         </ul>
