@@ -2,8 +2,10 @@ import os
 from flask import Flask
 from application import get_app
 from models import *
+from flask_session import Session
 
 app = get_app()
+session = Session(app)
 
 # Tell Flask what SQLAlchemy databas to use.
 # app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:a1234567@localhost"
@@ -18,6 +20,7 @@ def main():
       # Create tables based on each table definition in `models`
       db.drop_all()
       db.create_all()
+      session.app.session_interface.db.create_all()
 
 if __name__ == "__main__":
   # Allows for command line interaction with Flask application

@@ -5,13 +5,12 @@
 {% endblock %}
 
 {% block content %}
-    <!-- {{te}} -->
     <h3>Search for a book!</h3>
     <form action="/search" method="GET">
-        <div class="form-group">
+        <div class="form-group w-50 justify-content-center align-items-center mx-auto">
             <input type="text" class="form-control" name="book" autofocus aria-describedby="bookHelp" placeholder="ISBN, Title or Author">
             <small id="bookHelp" class="form-text text-muted">Example: 0375508325, Title or Author</small>
         </div>
-        <button class="btn btn-primary" type="submit">Search</button>
+        <button class="btn btn-primary" type="submit" disabled>Search</button>
     </form>
 {% endblock %}

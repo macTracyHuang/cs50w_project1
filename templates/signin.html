@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Log In
+Sign In
 {% endblock %}
 
 {% block content %}
 <!-- {{te}} -->
-<h3>Log In</h3>
+<h3>Sign In</h3>
 <!-- Login Form -->
-<form action="/login" method="post">
+<form action="/signin" method="post">
   <div class="form-row justify-content-center align-items-center mx-auto">
     <div class="col-auto">
       <label class="sr-only" for="inlineFormInput">Username</label>
@@ -21,7 +21,7 @@ Log In
       </div>
     </div>
     <div class="col-auto">
-      <button type="submit" class="btn btn-primary">Log In</button>
+      <button type="submit" class="btn btn-primary">Sign In</button>
     </div>
   </div>
 </form>

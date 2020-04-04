@@ -16,7 +16,6 @@ class Book(db.Model):
     author = db.Column(db.String, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     isbn = db.Column(db.String, nullable=False)
-    lollast = db.Column(db.String, nullable=False)
 
 class Review(db.Model):
     __tablename__ = "reviews"
