@@ -27,7 +27,7 @@ def search_book(val):
     if val == "":
         return None
     else:
-        books = db.session.query(Book).filter(or_(Book.author.like("%"+val+"%"),Book.isbn.like("%"+val+"%"),Book.title.like("%"+val+"%"))).all()
+        books = db.session.query(Book).filter(or_(Book.author.ilike("%"+val+"%"),Book.isbn.ilike("%"+val+"%"),Book.title.ilike("%"+val+"%"))).all()
     return books
 
 def login_required(f):
@@ -38,8 +38,8 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/books")
-def books():
+@app.route("/addBook")
+def addBook():
     pass
 
 @app.route("/books/<int:book_id>")
