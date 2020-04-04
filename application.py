@@ -85,9 +85,9 @@ def signin():
         elif password is None:
             return render_template("signin.html",status="Enter password")
         #check duplicate
-        db_name=db.session.query(User).filter_by(username=username).first().username
-        if db_name is not None:
-            return render_template("signin.html",status=db_name + " is already taken")
+        db_user=db.session.query(User).filter_by(username=username).first()
+        if db_user is not None:
+            return render_template("signin.html",status=db_user.username + " is already taken")
         #save in db
         user=User(username=username,password=password)
         db.session.add(user)
