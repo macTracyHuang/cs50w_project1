@@ -101,6 +101,8 @@ def login():
             else:
                 session["user_id"]=db_user.id
                 session["user_name"]=db_username
+        if session.get("user_id") == 9:
+            db_username="小寶, Let's 慶餘年"
         return render_template("index.html",status="Welcome Back, Dear " + db_username)
 
 @app.route("/logout", methods=["GET", "POST"])
