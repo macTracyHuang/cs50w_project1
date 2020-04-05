@@ -39,7 +39,7 @@ Books
 </form>
 <!-- Display other revies -->
 {% for review in reviews %}
-<div class="card border-dark mb-3 text-left offset-lg-3" style="max-width: 30vw;"">
+<div class="card border-dark mb-3 text-left mx-auto" style="width:60vw;">
   <div class="card-header">Review from {{ review.User.username}}</div>
   <div class="card-body text-dark">
     <h5 class="card-title"><input type="hidden" id="rating" readonly class="rating" name="rating" value="{{review.Review.rating}}" data-filled="fa fa-star fa-1x" data-empty="fa fa-star-o fa-1x" data-fractions="3"/></h5>
