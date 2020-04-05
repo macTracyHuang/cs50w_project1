@@ -38,41 +38,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/reviews",methods=["GET", "POST"])
-@login_required
-def review():
-    if request.method == "GET":
-        pass
-    elif request.method == "POST":
-        #Get information
-        user_id=session.get("user_id")
-        content=request.form.get("message").strip()
-        rating=request.form.get("rating")
-        book_id=request.form.get("book_id")
-        book=Book.query.get(book_id)
-        #Validation
-        if rating.strip() == "0":
-            flash("Please Rating!!")
-            return redirect(url_for("book",book_id=book_id))
-        else:
-            try:
-                float(rating)
-            except ValueError:
-                raise
-        if content == "":
-            content="No Message"
-        #only one review
-        pastreview=Review.query.filter_by(user_id=user_id,book_id=book_id).first()
-        if pastreview is not None:
-            flash("Already Rated!!")
-            return redirect(url_for("book",book_id=book_id))
-        #Save into db
-        review=Review(user_id=user_id,content=content,rating=rating,book_id=book_id)
-        db.session.add(review)
-        db.session.commit()
-        flash("Thank you for rating")
-        return redirect(url_for("book",book_id=book_id))
-
 @app.route("/books/<int:book_id>",methods=["GET", "POST"])
 def book(book_id):
     """List details about a single book."""
@@ -140,6 +105,41 @@ def login():
 def logout():
     session.clear()
     return render_template("login.html",status="See you soon")
+
+@app.route("/reviews",methods=["GET", "POST"])
+@login_required
+def review():
+    if request.method == "GET":
+        pass
+    elif request.method == "POST":
+        #Get information
+        user_id=session.get("user_id")
+        content=request.form.get("message").strip()
+        rating=request.form.get("rating")
+        book_id=request.form.get("book_id")
+        book=Book.query.get(book_id)
+        #Validation
+        if rating.strip() == "0":
+            flash("Please Rating!!")
+            return redirect(url_for("book",book_id=book_id))
+        else:
+            try:
+                float(rating)
+            except ValueError:
+                raise
+        if content == "":
+            content="No Message"
+        #only one review
+        pastreview=Review.query.filter_by(user_id=user_id,book_id=book_id).first()
+        if pastreview is not None:
+            flash("Already Rated!!")
+            return redirect(url_for("book",book_id=book_id))
+        #Save into db
+        review=Review(user_id=user_id,content=content,rating=rating,book_id=book_id)
+        db.session.add(review)
+        db.session.commit()
+        flash("Thank you for rating")
+        return redirect(url_for("book",book_id=book_id))
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
