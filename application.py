@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, session,redirect
+from flask import Flask, render_template, request, session,redirect,url_for,flash,get_flashed_messages
 from functools import wraps
 from models import *
 from werkzeug.security import check_password_hash,generate_password_hash
@@ -38,20 +38,51 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/addBook")
-def addBook():
-    pass
+@app.route("/reviews",methods=["GET", "POST"])
+@login_required
+def review():
+    if request.method == "GET":
+        pass
+    elif request.method == "POST":
+        #Get information
+        user_id=session.get("user_id")
+        content=request.form.get("message").strip()
+        rating=request.form.get("rating")
+        book_id=request.form.get("book_id")
+        book=Book.query.get(book_id)
+        #Validation
+        if rating.strip() == "0":
+            flash("Please Rating!!")
+            return redirect(url_for("book",book_id=book_id))
+        else:
+            try:
+                float(rating)
+            except ValueError:
+                raise
+        if content == "":
+            content="No Message"
+        #only one review
+        pastreview=Review.query.filter_by(user_id=user_id,book_id=book_id).first()
+        if pastreview is not None:
+            flash("Already Rated!!")
+            return redirect(url_for("book",book_id=book_id))
+        #Save into db
+        review=Review(user_id=user_id,content=content,rating=rating,book_id=book_id)
+        db.session.add(review)
+        db.session.commit()
+        flash("Thank you for rating")
+        return redirect(url_for("book",book_id=book_id))
 
-@app.route("/books/<int:book_id>")
+@app.route("/books/<int:book_id>",methods=["GET", "POST"])
 def book(book_id):
     """List details about a single book."""
-
     # Make sure book exists.
     book = Book.query.get(book_id)
     if book is None:
         return render_template("index.html", status="No such book.")
     # Get all reviews.
-    reviews = Review.query.filter_by(book_id=book_id).all()
+    # reviews = Review.query.filter_by(book_id=book_id).all()
+    reviews = db.session.query(Review,User).filter(Review.user_id==User.id).filter_by(book_id=book_id).all()
     return render_template("books.html", book=book, reviews=reviews)
 
 @app.route("/", methods=["GET", "POST"])
@@ -110,25 +141,25 @@ def logout():
     session.clear()
     return render_template("login.html",status="See you soon")
 
-@app.route("/signin", methods=["GET", "POST"])
-def signin():
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
     if request.method == "POST":
         #Get form information
         username=request.form.get("username")
         password=request.form.get("password")
         #chcek input format
         if username is None:
-            return render_template("signin.html",status="Enter username")
+            return render_template("signup.html",status="Enter username")
         elif password is None:
-            return render_template("signin.html",status="Enter password")
+            return render_template("signup.html",status="Enter password")
         #check duplicate
         db_user=db.session.query(User).filter_by(username=username).first()
         if db_user is not None:
-            return render_template("signin.html",status=db_user.username + " is already taken")
+            return render_template("signup.html",status=db_user.username + " is already taken")
         #save in db
         user=User(username=username,password=password)
         db.session.add(user)
         db.session.commit()
-        return render_template("index.html",status="signin successed, plz login")
+        return render_template("index.html",status="signup successed, plz login")
     elif request.method == "GET":
-        return render_template("signin.html")
+        return render_template("signup.html")
