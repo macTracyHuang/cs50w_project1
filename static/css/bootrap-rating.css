@@ -1,0 +1,19 @@
+.symbol {
+  display: inline-block;
+  border-radius: 50%;
+  border: 5px double white;
+  width: 30px;
+  height: 30px;
+}
+
+.symbol-empty {
+  background-color: #ccc;
+}
+
+.symbol-filled {
+  background-color: black;
+}
+
+.glyphicon.glyphicon-star, .glyphicon.glyphicon-star-empty {
+        font-size: 30px;
+    }
