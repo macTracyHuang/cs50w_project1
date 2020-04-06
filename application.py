@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template, request, session,redirect,url_for,flash,get_flashed_messages
+import requests
+from flask import Flask, render_template, request,session,redirect,url_for,flash,jsonify
 from functools import wraps
 from models import *
 from werkzeug.security import check_password_hash,generate_password_hash
@@ -27,7 +28,8 @@ def search_book(val):
     if val == "":
         return None
     else:
-        books = db.session.query(Book).filter(or_(Book.author.ilike("%"+val+"%"),Book.isbn.ilike("%"+val+"%"),Book.title.ilike("%"+val+"%"))).all()
+        books=db.session.execute("SELECT * FROM books WHERE LOWER(author) like :val OR LOWER(isbn) like :val OR LOWER(title) like :val", {"val": "%"+val+"%"}).fetchall()
+        # books = db.session.query(Book).filter(or_(Book.author.ilike("%"+val+"%"),Book.isbn.ilike("%"+val+"%"),Book.title.ilike("%"+val+"%"))).all()
     return books
 
 def login_required(f):
@@ -42,13 +44,23 @@ def login_required(f):
 def book(book_id):
     """List details about a single book."""
     # Make sure book exists.
-    book = Book.query.get(book_id)
+    book=db.session.execute("SELECT * FROM books WHERE id=:book_id", {"book_id": book_id}).fetchone()
+    # book = Book.query.get(book_id)
     if book is None:
         return render_template("index.html", status="No such book.")
+    #Get Reviews from Goodreads
+    res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "Fpqzn63x50WxFTwDduvJLA", "isbns": book.isbn})
+    if res.status_code != 200:
+      goodrating=0
+      goodcount=0
+    else:
+        data=res.json()
+        goodrating=data["books"][0]["average_rating"]
+        goodcount=data["books"][0]["work_ratings_count"]
     # Get all reviews.
-    # reviews = Review.query.filter_by(book_id=book_id).all()
-    reviews = db.session.query(Review,User).filter(Review.user_id==User.id).filter_by(book_id=book_id).all()
-    return render_template("books.html", book=book, reviews=reviews)
+    reviews=db.session.execute("SELECT * FROM reviews JOIN users ON reviews.user_id=users.id WHERE book_id=:book_id", {"book_id": book_id}).fetchall()
+    # reviews = db.session.query(Review,User).filter(Review.user_id==User.id).filter_by(book_id=book_id).all()
+    return render_template("books.html", book=book, reviews=reviews,goodrating=goodrating,goodcount=goodcount)
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
@@ -86,7 +98,8 @@ def login():
         elif password is None:
             return render_template("login.html",status="Please enter password")
         #compare data with db
-        db_user = db.session.query(User).filter_by(username=username).first()
+        db_user=db.session.execute("SELECT * FROM users WHERE username=:username", {"username": username}).fetchone()
+        # db_user = db.session.query(User).filter_by(username=username).first()
         if db_user is None:
             return render_template("login.html",status="No such user")
         else:
@@ -117,7 +130,6 @@ def review():
         content=request.form.get("message").strip()
         rating=request.form.get("rating")
         book_id=request.form.get("book_id")
-        book=Book.query.get(book_id)
         #Validation
         if rating.strip() == "0":
             flash("Please Rating!!")
@@ -130,7 +142,8 @@ def review():
         if content == "":
             content="No Message"
         #only one review
-        pastreview=Review.query.filter_by(user_id=user_id,book_id=book_id).first()
+        pastreview=db.session.execute("SELECT * FROM reviews WHERE book_id=:book_id AND user_id=:user_id", {"book_id": book_id,"user_id":user_id}).fetchone()
+        # pastreview=Review.query.filter_by(user_id=user_id,book_id=book_id).first()
         if pastreview is not None:
             flash("Already Rated!!")
             return redirect(url_for("book",book_id=book_id))
@@ -153,7 +166,8 @@ def signup():
         elif password is None:
             return render_template("signup.html",status="Enter password")
         #check duplicate
-        db_user=db.session.query(User).filter_by(username=username).first()
+        db_user=db.session.execute("SELECT * FROM users WHERE username=:username", {"username": username}).fetchone()
+        # db_user=db.session.query(User).filter_by(username=username).first()
         if db_user is not None:
             return render_template("signup.html",status=db_user.username + " is already taken")
         #save in db
@@ -163,3 +177,25 @@ def signup():
         return render_template("index.html",status="signup successed, plz login")
     elif request.method == "GET":
         return render_template("signup.html")
+
+
+# API
+@app.route("/api/<string:isbn>")
+def book_api(isbn):
+  """Return details about a single book."""
+
+  # Make sure book exists.
+  book=db.session.execute("SELECT * FROM books WHERE isbn=:isbn", {"isbn": isbn}).fetchone()
+  if book is None:
+      return jsonify({"error":isbn}), 404
+  # Get review information.
+  review=db.session.execute("SELECT COUNT(*) AS review_count,AVG(rating) AS average_score FROM reviews WHERE book_id=:book_id", {"book_id": book.id}).fetchone()
+
+  return jsonify({
+  "title": book.title,
+  "author": book.author,
+  "year": book.year,
+  "isbn": book.isbn,
+  "review_count": review.review_count,
+  "average_score": review.average_score
+  })
